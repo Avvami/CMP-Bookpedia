@@ -1,14 +1,104 @@
 package com.plcoding.bookpedia.book.presentation.book_list
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.plcoding.bookpedia.book.domain.BookRepository
+import com.plcoding.bookpedia.book.domain.SearchedBooks
+import com.plcoding.bookpedia.core.domain.onError
+import com.plcoding.bookpedia.core.domain.onSuccess
+import com.plcoding.bookpedia.core.presentation.toUiText
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-class BookListViewModel: ViewModel() {
+class BookListViewModel(
+    private val bookRepository: BookRepository
+): ViewModel() {
+
+    private val searchedBooks = SearchedBooks(0, null)
+    private var searchJob: Job? = null
 
     private val _state = MutableStateFlow(BookListState())
-    val state = _state.asStateFlow()
+    val state = _state
+        .onStart {
+            if (searchedBooks.books == null) {
+                observeSearchQuery()
+            }
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            _state.value
+        )
+
+    @OptIn(FlowPreview::class)
+    private fun observeSearchQuery() {
+        state
+            .map { it.searchQuery }
+            .distinctUntilChanged()
+            .debounce(500L)
+            .onEach { query ->
+                when {
+                    query.isBlank() -> {
+                        _state.update {
+                            it.copy(
+                                errorMessage = null,
+                                searchResultsCount = 0,
+                                searchResults = null
+                            )
+                        }
+                    }
+                    query.length >= 2 -> {
+                        searchJob?.cancel()
+                        searchJob = searchBooks(query)
+                    }
+                }
+                println("VM Query is: $query, results: ${_state.value.searchResults}")
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun searchBooks(query: String) = viewModelScope.launch {
+        _state.update {
+            it.copy(
+                loading = true,
+                searchResultsCount = 0,
+                searchResults = null
+            )
+        }
+
+        bookRepository
+            .searchBooks(query.trim())
+            .onSuccess { result ->
+                _state.update {
+                    it.copy(
+                        loading = false,
+                        searchResultsCount = result.booksCount,
+                        searchResults = result.books
+                    )
+                }
+            }
+            .onError { error ->
+                _state.update {
+                    it.copy(
+                        searchResultsCount = 0,
+                        searchResults = emptyList(),
+                        loading = false,
+                        errorMessage = error.toUiText()
+                    )
+                }
+            }
+    }
 
     fun onAction(action: BookListAction) {
         when(action) {
@@ -16,7 +106,7 @@ class BookListViewModel: ViewModel() {
             is BookListAction.OnBookClick -> TODO()
             BookListAction.OnSearchActiveChange -> {
                 _state.update {
-                    it.copy(isSearchActive = !it.isSearchActive)
+                    it.copy(searchActive = !it.searchActive)
                 }
             }
             is BookListAction.OnSearchQueryChange -> {

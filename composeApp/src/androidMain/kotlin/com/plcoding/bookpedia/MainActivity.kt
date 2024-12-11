@@ -11,7 +11,6 @@ import com.plcoding.bookpedia.book.domain.Book
 import com.plcoding.bookpedia.book.presentation.book_list.BookListScreen
 import com.plcoding.bookpedia.book.presentation.book_list.BookListState
 import com.plcoding.bookpedia.book.presentation.book_list.components.BookCard
-import com.plcoding.bookpedia.core.presentation.UiText
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,7 +67,7 @@ val books = (1..100).map {
 fun ScreenPreview() {
     BookListScreen(
         state = BookListState(
-            isSearchActive = true,
+            searchActive = true,
             searchQuery = "Harry Potter",
             favoriteBooks = emptyList(),
 //            errorMessage = UiText.DynamicString("Oops! There is an error happened."),

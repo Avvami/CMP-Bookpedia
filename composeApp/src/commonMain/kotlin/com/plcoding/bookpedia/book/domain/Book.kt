@@ -10,6 +10,6 @@ data class Book(
     val firstPublishYear: String?,
     val averageRating: Double?,
     val ratingCount: Int?,
-    val pages: Int,
+    val pages: Int?,
     val editions: Int
 )

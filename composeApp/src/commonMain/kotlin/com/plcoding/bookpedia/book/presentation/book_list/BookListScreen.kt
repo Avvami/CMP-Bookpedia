@@ -79,7 +79,7 @@ fun BookListScreen(
             TopAppBar(
                 title = {
                     AnimatedContent(
-                        targetState = state.isSearchActive,
+                        targetState = state.searchActive,
                         label = "Text Filed Animation"
                     ) { targetState ->
                         if (targetState) {
@@ -101,10 +101,11 @@ fun BookListScreen(
                     }
                 },
                 navigationIcon = {
-                    AnimatedVisibility(state.isSearchActive) {
+                    AnimatedVisibility(state.searchActive) {
                         IconButton(
                             onClick = {
                                 onAction(BookListAction.OnSearchActiveChange)
+                                onAction(BookListAction.OnSearchQueryChange(""))
                             }
                         ) {
                             Icon(
@@ -115,7 +116,7 @@ fun BookListScreen(
                     }
                 },
                 actions = {
-                    AnimatedVisibility(visible = !state.isSearchActive) {
+                    AnimatedVisibility(visible = !state.searchActive) {
                         IconButton(
                             onClick = { onAction(BookListAction.OnSearchActiveChange) }
                         ) {
@@ -131,37 +132,46 @@ fun BookListScreen(
     ) { innerPadding ->
         AnimatedContent(
             modifier = Modifier.padding(innerPadding),
-            targetState = state.isSearchActive
+            targetState = state.searchActive
         ) { targetState ->
             if (targetState) {
-                when {
-                    state.errorMessage != null -> {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            text = state.errorMessage.asString(),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    state.searchResults.isEmpty() && state.searchQuery.isNotBlank() -> {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            text = stringResource(Res.string.no_search_results),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                    else -> {
-                        BookList(
-                            books = state.searchResults,
-                            onBookClick = { book -> onAction(BookListAction.OnBookClick(book)) },
-                            onFavoriteClick = { book -> onAction(BookListAction.OnFavoriteClick(book)) },
-                            lazyGridState = searchResultsGridState
-                        )
+                println("SC Query is: ${state.searchQuery}, results: ${state.searchResults}")
+                if (state.loading && state.searchResults == null) {
+
+                } else {
+                    when {
+                        state.errorMessage != null -> {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                text = state.errorMessage.asString(),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        else -> {
+                            state.searchResults?.let { results ->
+                                if (results.isEmpty()) {
+                                    Text(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                                        text = stringResource(Res.string.no_search_results),
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = TextAlign.Center
+                                    )
+                                } else {
+                                    BookList(
+                                        booksCount = state.searchResultsCount,
+                                        books = results,
+                                        onBookClick = { book -> onAction(BookListAction.OnBookClick(book)) },
+                                        onFavoriteClick = { book -> onAction(BookListAction.OnFavoriteClick(book)) },
+                                        lazyGridState = searchResultsGridState
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             } else {

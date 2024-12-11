@@ -5,9 +5,10 @@ import com.plcoding.bookpedia.core.presentation.UiText
 
 data class BookListState(
     val searchQuery: String = "",
-    val isSearchActive: Boolean = false,
-    val searchResults: List<Book> = emptyList(),
+    val searchActive: Boolean = false,
+    val searchResultsCount: Int = 0,
+    val searchResults: List<Book>? = null,
     val favoriteBooks: List<Book> = emptyList(),
-    val isLoading: Boolean = false,
+    val loading: Boolean = false,
     val errorMessage: UiText? = null
 )
