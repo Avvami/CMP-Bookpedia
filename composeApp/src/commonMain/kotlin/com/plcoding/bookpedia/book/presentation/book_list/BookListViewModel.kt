@@ -63,7 +63,6 @@ class BookListViewModel(
                         searchJob = searchBooks(query)
                     }
                 }
-                println("VM Query is: $query, results: ${_state.value.searchResults}")
             }
             .launchIn(viewModelScope)
     }
@@ -102,8 +101,7 @@ class BookListViewModel(
 
     fun onAction(action: BookListAction) {
         when(action) {
-            is BookListAction.OnFavoriteClick -> TODO()
-            is BookListAction.OnBookClick -> TODO()
+            is BookListAction.OnFavoriteClick -> {}
             BookListAction.OnSearchActiveChange -> {
                 _state.update {
                     it.copy(searchActive = !it.searchActive)
@@ -114,6 +112,7 @@ class BookListViewModel(
                     it.copy(searchQuery = action.query)
                 }
             }
+            else -> Unit
         }
     }
 }

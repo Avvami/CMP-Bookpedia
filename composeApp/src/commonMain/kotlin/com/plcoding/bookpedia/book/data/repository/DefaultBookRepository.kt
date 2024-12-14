@@ -16,4 +16,16 @@ class DefaultBookRepository(
             .searchBooks(query)
             .map { it.toSearchedBooks() }
     }
+
+    override suspend fun getBookDescription(bookId: String): Result<String?, DataError> {
+        return remoteBookDataSource
+            .getBookDetails(bookId)
+            .map { it.description }
+//        val localResult = favoriteBookDao.getFavoriteBook(bookId)
+//
+//        return if(localResult == null) {
+//        } else {
+//            Result.Success(localResult.description)
+//        }
+    }
 }

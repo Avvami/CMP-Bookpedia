@@ -135,7 +135,6 @@ fun BookListScreen(
             targetState = state.searchActive
         ) { targetState ->
             if (targetState) {
-                println("SC Query is: ${state.searchQuery}, results: ${state.searchResults}")
                 if (state.loading && state.searchResults == null) {
 
                 } else {

@@ -7,9 +7,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.plcoding.bookpedia.app.App
 import com.plcoding.bookpedia.book.domain.Book
-import com.plcoding.bookpedia.book.presentation.book_list.BookListScreen
-import com.plcoding.bookpedia.book.presentation.book_list.BookListState
+import com.plcoding.bookpedia.book.presentation.book_detail.BookDetailScreen
+import com.plcoding.bookpedia.book.presentation.book_detail.BookDetailState
 import com.plcoding.bookpedia.book.presentation.book_list.components.BookCard
 
 class MainActivity : ComponentActivity() {
@@ -52,8 +53,8 @@ val books = (1..100).map {
         title = "Booked book",
         imageUrl = "",
         description = "",
-        authors = emptyList(),
-        languages = emptyList(),
+        authors = listOf("J. K. Rawling"),
+        languages = listOf("eng", "sp"),
         firstPublishYear = null,
         averageRating = 3.2345,
         ratingCount = 130,
@@ -65,13 +66,10 @@ val books = (1..100).map {
 @Preview(showBackground = true)
 @Composable
 fun ScreenPreview() {
-    BookListScreen(
-        state = BookListState(
-            searchActive = true,
-            searchQuery = "Harry Potter",
-            favoriteBooks = emptyList(),
-//            errorMessage = UiText.DynamicString("Oops! There is an error happened."),
-            searchResults = books
+    BookDetailScreen(
+        state = BookDetailState(
+            book = books.first(),
+            favorite = true
         ),
         onAction = { /*TODO*/ }
     )
