@@ -22,8 +22,9 @@ fun BookList(
     modifier: Modifier = Modifier,
     booksCount: Int = 0,
     books: List<Book>,
+    favorites: List<Book>,
     onBookClick: (Book) -> Unit,
-    onFavoriteClick: (Book) -> Unit,
+    onFavoriteClick: (Book, favorite: Boolean) -> Unit,
     lazyGridState: LazyGridState = rememberLazyGridState()
 ) {
     LazyVerticalGrid(
@@ -49,12 +50,13 @@ fun BookList(
             items = books,
             key = { it.id }
         ) { book ->
+            val favorite = favorites.any { it.id == book.id }
             BookCard(
                 modifier = Modifier.fillMaxWidth(),
                 book = book,
-                isFavorite = false,
+                isFavorite = favorite,
                 onClick = { onBookClick(book) },
-                onFavoriteClick = onFavoriteClick
+                onFavoriteClick = { onFavoriteClick(it, favorite) }
             )
         }
     }

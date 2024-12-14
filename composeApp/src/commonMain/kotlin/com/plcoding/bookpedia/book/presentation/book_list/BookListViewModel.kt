@@ -27,6 +27,7 @@ class BookListViewModel(
 
     private val searchedBooks = SearchedBooks(0, null)
     private var searchJob: Job? = null
+    private var favoriteJob: Job? = null
 
     private val _state = MutableStateFlow(BookListState())
     val state = _state
@@ -34,12 +35,27 @@ class BookListViewModel(
             if (searchedBooks.books == null) {
                 observeSearchQuery()
             }
+            observeFavoriteBooks()
         }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000L),
             _state.value
         )
+
+    private fun observeFavoriteBooks() {
+        favoriteJob?.cancel()
+        favoriteJob = bookRepository
+            .getFavoriteBooks()
+            .onEach { favoriteBooks ->
+                _state.update {
+                    it.copy(
+                        favoriteBooks = favoriteBooks
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
+    }
 
     @OptIn(FlowPreview::class)
     private fun observeSearchQuery() {
@@ -101,7 +117,15 @@ class BookListViewModel(
 
     fun onAction(action: BookListAction) {
         when(action) {
-            is BookListAction.OnFavoriteClick -> {}
+            is BookListAction.OnFavoriteClick -> {
+                viewModelScope.launch {
+                    if (action.favorite) {
+                        bookRepository.deleteFromFavorites(action.book.id)
+                    } else {
+                        bookRepository.markAsFavorite(action.book)
+                    }
+                }
+            }
             BookListAction.OnSearchActiveChange -> {
                 _state.update {
                     it.copy(searchActive = !it.searchActive)

@@ -164,8 +164,9 @@ fun BookListScreen(
                                     BookList(
                                         booksCount = state.searchResultsCount,
                                         books = results,
+                                        favorites = state.favoriteBooks,
                                         onBookClick = { book -> onAction(BookListAction.OnBookClick(book)) },
-                                        onFavoriteClick = { book -> onAction(BookListAction.OnFavoriteClick(book)) },
+                                        onFavoriteClick = { book, favorite -> onAction(BookListAction.OnFavoriteClick(book, favorite)) },
                                         lazyGridState = searchResultsGridState
                                     )
                                 }
@@ -208,8 +209,9 @@ fun BookListScreen(
                 } else {
                     BookList(
                         books = state.favoriteBooks,
+                        favorites = state.favoriteBooks,
                         onBookClick = { book -> onAction(BookListAction.OnBookClick(book)) },
-                        onFavoriteClick = { book -> onAction(BookListAction.OnFavoriteClick(book)) },
+                        onFavoriteClick = { book, favorite -> onAction(BookListAction.OnFavoriteClick(book, favorite)) },
                         lazyGridState = favoritesGridState
                     )
                 }
