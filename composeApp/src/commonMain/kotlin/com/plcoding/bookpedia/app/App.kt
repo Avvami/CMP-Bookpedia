@@ -1,6 +1,5 @@
 package com.plcoding.bookpedia.app
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -13,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.plcoding.bookpedia.app.theme.BookiesTheme
 import com.plcoding.bookpedia.book.presentation.SelectedBookViewModel
 import com.plcoding.bookpedia.book.presentation.book_detail.BookDetailAction
 import com.plcoding.bookpedia.book.presentation.book_detail.BookDetailScreenRoot
@@ -25,7 +25,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 @Preview
 fun App() {
-    MaterialTheme {
+    BookiesTheme {
         val navController = rememberNavController()
         NavHost(
             navController = navController,

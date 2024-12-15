@@ -55,7 +55,7 @@ fun SearchTextField(
                         Text(
                             text = stringResource(Res.string.search_placeholder),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = .7f)
                         )
                     }
                 },

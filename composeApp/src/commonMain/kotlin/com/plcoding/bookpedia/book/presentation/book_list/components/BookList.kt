@@ -37,7 +37,7 @@ fun BookList(
     ) {
         if (booksCount != 0) {
             item(
-                span = { GridItemSpan(1) }
+                span = { GridItemSpan(maxLineSpan) }
             ) {
                 Text(
                     modifier = Modifier.fillMaxWidth(),
@@ -52,7 +52,9 @@ fun BookList(
         ) { book ->
             val favorite = favorites.any { it.id == book.id }
             BookCard(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .animateItem(),
                 book = book,
                 isFavorite = favorite,
                 onClick = { onBookClick(book) },

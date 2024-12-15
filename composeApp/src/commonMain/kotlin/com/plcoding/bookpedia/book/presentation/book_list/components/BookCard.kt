@@ -17,6 +17,7 @@ import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ElevatedAssistChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,11 +37,11 @@ import com.plcoding.bookpedia.core.domain.util.formatAverageRating
 
 @Composable
 fun BookCard(
+    modifier: Modifier = Modifier,
     book: Book,
     isFavorite: Boolean,
     onClick: (Book) -> Unit,
-    onFavoriteClick: (Book) -> Unit,
-    modifier: Modifier = Modifier
+    onFavoriteClick: (Book) -> Unit
 ) {
     Row(
         modifier = modifier
@@ -83,7 +84,7 @@ fun BookCard(
                                     }
                                     withStyle(
                                         style = SpanStyle(
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = MaterialTheme.colorScheme.onSurface.copy(.7f)
                                         )
                                     ) {
                                         append("/5")
@@ -91,7 +92,7 @@ fun BookCard(
                                     book.ratingCount?.let { count ->
                                         withStyle(
                                             style = SpanStyle(
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(.7f),
                                                 fontSize = MaterialTheme.typography.labelMedium.fontSize,
                                                 fontWeight = MaterialTheme.typography.labelMedium.fontWeight
                                             )
@@ -113,13 +114,16 @@ fun BookCard(
                         elevation = AssistChipDefaults.assistChipElevation(elevation = 0.dp),
                         enabled = false,
                         colors = AssistChipDefaults.assistChipColors(
-                            disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = .05f),
                             disabledLeadingIconContentColor = MaterialTheme.colorScheme.primary
                         )
                     )
                 }
                 IconButton(
-                    onClick = { onFavoriteClick(book) }
+                    onClick = { onFavoriteClick(book) },
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
@@ -142,7 +146,7 @@ fun BookCard(
                     style = MaterialTheme.typography.bodyMedium,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurface.copy(.7f)
                 )
             }
         }

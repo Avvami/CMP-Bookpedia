@@ -2,6 +2,12 @@ package com.plcoding.bookpedia.book.presentation.book_list
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -18,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -61,7 +68,7 @@ fun BookListScreenRoot(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookListScreen(
+private fun BookListScreen(
     state: BookListState,
     onAction: (BookListAction) -> Unit
 ) {
@@ -80,7 +87,11 @@ fun BookListScreen(
                 title = {
                     AnimatedContent(
                         targetState = state.searchActive,
-                        label = "Text Filed Animation"
+                        label = "Text Filed Animation",
+                        transitionSpec = {
+                            fadeIn(animationSpec = tween(durationMillis = 100)) togetherWith
+                                    fadeOut(animationSpec = tween(durationMillis = 100))
+                        }
                     ) { targetState ->
                         if (targetState) {
                             SearchTextField(
@@ -101,7 +112,11 @@ fun BookListScreen(
                     }
                 },
                 navigationIcon = {
-                    AnimatedVisibility(state.searchActive) {
+                    AnimatedVisibility(
+                        visible = state.searchActive,
+                        enter = expandHorizontally() + fadeIn(),
+                        exit = shrinkHorizontally() + fadeOut()
+                    ) {
                         IconButton(
                             onClick = {
                                 onAction(BookListAction.OnSearchActiveChange)
@@ -126,13 +141,22 @@ fun BookListScreen(
                             )
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface
     ) { innerPadding ->
         AnimatedContent(
             modifier = Modifier.padding(innerPadding),
-            targetState = state.searchActive
+            targetState = state.searchActive,
+            transitionSpec = { fadeIn(animationSpec = tween(durationMillis = 100)) togetherWith fadeOut(animationSpec = tween(durationMillis = 100)) }
         ) { targetState ->
             if (targetState) {
                 if (state.loading && state.searchResults == null) {
@@ -145,7 +169,7 @@ fun BookListScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 8.dp),
                                 text = state.errorMessage.asString(),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                color = MaterialTheme.colorScheme.onSurface.copy(.7f),
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -157,7 +181,7 @@ fun BookListScreen(
                                             .fillMaxWidth()
                                             .padding(horizontal = 16.dp, vertical = 8.dp),
                                         text = stringResource(Res.string.no_search_results),
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        color = MaterialTheme.colorScheme.onSurface.copy(.7f),
                                         textAlign = TextAlign.Center
                                     )
                                 } else {
@@ -203,7 +227,7 @@ fun BookListScreen(
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         text = annotatedString,
                         inlineContent = inlineContent,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurface.copy(.7f),
                         textAlign = TextAlign.Center
                     )
                 } else {

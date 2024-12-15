@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -24,6 +25,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -36,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -72,11 +75,13 @@ fun BookDetailScreenRoot(
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun BookDetailScreen(
+private fun BookDetailScreen(
     state: BookDetailState,
     onAction: (BookDetailAction) -> Unit
 ) {
+    val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
+        modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = {},
@@ -91,14 +96,19 @@ fun BookDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent
-                )
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                scrollBehavior = topBarScrollBehavior
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp),
-            contentPadding = innerPadding,
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
+            contentPadding = PaddingValues(start = 16.dp, top = innerPadding.calculateTopPadding() + 8.dp, end = 16.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
@@ -139,7 +149,7 @@ fun BookDetailScreen(
                             Text(
                                 text = it.take(3).fastJoinToString(","),
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurface.copy(.7f)
                             )
                         }
                     }
@@ -171,7 +181,8 @@ fun BookDetailScreen(
                             Icon(
                                 modifier = Modifier.size(ButtonDefaults.IconSize),
                                 imageVector = Icons.Filled.Star,
-                                contentDescription = "Rating"
+                                contentDescription = "Rating",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
@@ -185,7 +196,7 @@ fun BookDetailScreen(
                                     }
                                     withStyle(
                                         style = SpanStyle(
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = MaterialTheme.colorScheme.onSurface.copy(.7f)
                                         )
                                     ) {
                                         append("/5")
@@ -193,7 +204,7 @@ fun BookDetailScreen(
                                     state.book.ratingCount?.let { count ->
                                         withStyle(
                                             style = SpanStyle(
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                color = MaterialTheme.colorScheme.onSurface.copy(.7f),
                                                 fontSize = MaterialTheme.typography.labelMedium.fontSize,
                                                 fontWeight = MaterialTheme.typography.labelMedium.fontWeight
                                             )
@@ -210,7 +221,11 @@ fun BookDetailScreen(
                         onClick = {
                             onAction(BookDetailAction.OnFavoriteClick)
                         },
-                        shape = MaterialTheme.shapes.small
+                        shape = MaterialTheme.shapes.small,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.surface
+                        )
                     ) {
                         Icon(
                             imageVector = if (state.favorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
