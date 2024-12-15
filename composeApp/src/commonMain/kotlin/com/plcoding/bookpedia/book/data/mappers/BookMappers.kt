@@ -1,8 +1,17 @@
 package com.plcoding.bookpedia.book.data.mappers
 
 import com.plcoding.bookpedia.book.data.database.BookEntity
+import com.plcoding.bookpedia.book.data.dto.SearchResponseDto
 import com.plcoding.bookpedia.book.data.dto.SearchedBookDto
 import com.plcoding.bookpedia.book.domain.Book
+import com.plcoding.bookpedia.book.domain.SearchedBooks
+
+fun SearchResponseDto.toSearchedBooks(): SearchedBooks {
+    return SearchedBooks(
+        booksCount = resultsCount,
+        books = results.map { it.toBook() }
+    )
+}
 
 fun SearchedBookDto.toBook(): Book {
     return Book(
@@ -19,8 +28,8 @@ fun SearchedBookDto.toBook(): Book {
         firstPublishYear = firstPublishYear.toString(),
         averageRating = ratingsAverage,
         ratingCount = ratingsCount,
-        numPages = numPagesMedian,
-        numEditions = numEditions ?: 0
+        pages = numPagesMedian,
+        editions = numEditions ?: 0
     )
 }
 
@@ -33,10 +42,10 @@ fun Book.toBookEntity(): BookEntity {
         languages = languages,
         authors = authors,
         firstPublishYear = firstPublishYear,
-        ratingsAverage = averageRating,
-        ratingsCount = ratingCount,
-        numPagesMedian = numPages,
-        numEditions = numEditions
+        averageRating = averageRating,
+        ratingCount = ratingCount,
+        pages = pages,
+        editions = editions
     )
 }
 
@@ -49,9 +58,9 @@ fun BookEntity.toBook(): Book {
         languages = languages,
         authors = authors,
         firstPublishYear = firstPublishYear,
-        averageRating = ratingsAverage,
-        ratingCount = ratingsCount,
-        numPages = numPagesMedian,
-        numEditions = numEditions
+        averageRating = averageRating,
+        ratingCount = ratingCount,
+        pages = pages,
+        editions = editions
     )
 }

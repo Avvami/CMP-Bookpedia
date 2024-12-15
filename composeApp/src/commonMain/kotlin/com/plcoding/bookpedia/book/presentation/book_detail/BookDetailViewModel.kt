@@ -9,7 +9,6 @@ import com.plcoding.bookpedia.book.domain.BookRepository
 import com.plcoding.bookpedia.core.domain.onSuccess
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -19,7 +18,7 @@ import kotlinx.coroutines.launch
 
 class BookDetailViewModel(
     private val bookRepository: BookRepository,
-    private val savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
     private val bookId = savedStateHandle.toRoute<Route.BookDetail>().id
@@ -28,7 +27,7 @@ class BookDetailViewModel(
     val state = _state
         .onStart {
             fetchBookDescription()
-            observeFavoriteStatus()
+            observeFavorite()
         }
         .stateIn(
             viewModelScope,
@@ -36,35 +35,15 @@ class BookDetailViewModel(
             _state.value
         )
 
-    fun onAction(action: BookDetailAction) {
-        when(action) {
-            is BookDetailAction.OnSelectedBookChange -> {
-                _state.update { it.copy(
-                    book = action.book
-                ) }
-            }
-            is BookDetailAction.OnFavoriteClick -> {
-                viewModelScope.launch {
-                    if(state.value.isFavorite) {
-                        bookRepository.deleteFromFavorites(bookId)
-                    } else {
-                        state.value.book?.let { book ->
-                            bookRepository.markAsFavorite(book)
-                        }
-                    }
-                }
-            }
-            else -> Unit
-        }
-    }
-
-    private fun observeFavoriteStatus() {
+    private fun observeFavorite() {
         bookRepository
             .isBookFavorite(bookId)
-            .onEach { isFavorite ->
-                _state.update { it.copy(
-                    isFavorite = isFavorite
-                ) }
+            .onEach { favorite ->
+                _state.update {
+                    it.copy(
+                        favorite = favorite
+                    )
+                }
             }
             .launchIn(viewModelScope)
     }
@@ -74,13 +53,39 @@ class BookDetailViewModel(
             bookRepository
                 .getBookDescription(bookId)
                 .onSuccess { description ->
-                    _state.update { it.copy(
-                        book = it.book?.copy(
-                            description = description
-                        ),
-                        isLoading = false
-                    ) }
+                    _state.update {
+                        it.copy(
+                            book = it.book?.copy(
+                                description = description
+                            ),
+                            loading = false
+                        )
+                    }
                 }
+        }
+    }
+
+    fun onAction(action: BookDetailAction) {
+        when(action) {
+            BookDetailAction.OnFavoriteClick -> {
+                viewModelScope.launch {
+                    if (state.value.favorite) {
+                        bookRepository.deleteFromFavorites(bookId)
+                    } else {
+                        state.value.book?.let { book ->
+                            bookRepository.markAsFavorite(book)
+                        }
+                    }
+                }
+            }
+            is BookDetailAction.OnSelectedBookChange -> {
+                _state.update {
+                    it.copy(
+                        book = action.book
+                    )
+                }
+            }
+            else -> Unit
         }
     }
 }

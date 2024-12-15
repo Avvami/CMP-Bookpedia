@@ -4,10 +4,11 @@ import com.plcoding.bookpedia.book.domain.Book
 import com.plcoding.bookpedia.core.presentation.UiText
 
 data class BookListState(
-    val searchQuery: String = "Kotlin",
-    val searchResults: List<Book> = emptyList(),
+    val searchQuery: String = "",
+    val searchActive: Boolean = false,
+    val searchResultsCount: Int = 0,
+    val searchResults: List<Book>? = null,
     val favoriteBooks: List<Book> = emptyList(),
-    val isLoading: Boolean = true,
-    val selectedTabIndex: Int = 0,
+    val loading: Boolean = false,
     val errorMessage: UiText? = null
 )

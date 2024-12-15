@@ -4,9 +4,11 @@ import androidx.sqlite.SQLiteException
 import com.plcoding.bookpedia.book.data.database.FavoriteBookDao
 import com.plcoding.bookpedia.book.data.mappers.toBook
 import com.plcoding.bookpedia.book.data.mappers.toBookEntity
+import com.plcoding.bookpedia.book.data.mappers.toSearchedBooks
 import com.plcoding.bookpedia.book.data.network.RemoteBookDataSource
 import com.plcoding.bookpedia.book.domain.Book
 import com.plcoding.bookpedia.book.domain.BookRepository
+import com.plcoding.bookpedia.book.domain.SearchedBooks
 import com.plcoding.bookpedia.core.domain.DataError
 import com.plcoding.bookpedia.core.domain.EmptyResult
 import com.plcoding.bookpedia.core.domain.Result
@@ -18,23 +20,21 @@ class DefaultBookRepository(
     private val remoteBookDataSource: RemoteBookDataSource,
     private val favoriteBookDao: FavoriteBookDao
 ): BookRepository {
-    override suspend fun searchBooks(query: String): Result<List<Book>, DataError.Remote> {
+    override suspend fun searchBooks(query: String): Result<SearchedBooks, DataError.Remote> {
         return remoteBookDataSource
             .searchBooks(query)
-            .map { dto ->
-                dto.results.map { it.toBook() }
-            }
+            .map { it.toSearchedBooks() }
     }
 
     override suspend fun getBookDescription(bookId: String): Result<String?, DataError> {
         val localResult = favoriteBookDao.getFavoriteBook(bookId)
 
-        return if(localResult == null) {
+        return if (localResult?.description.isNullOrEmpty()) {
             remoteBookDataSource
                 .getBookDetails(bookId)
                 .map { it.description }
         } else {
-            Result.Success(localResult.description)
+            Result.Success(localResult?.description)
         }
     }
 

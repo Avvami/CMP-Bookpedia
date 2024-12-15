@@ -15,7 +15,7 @@ suspend inline fun <reified T> safeCall(
 ): Result<T, DataError.Remote> {
     val response = try {
         execute()
-    } catch(e: SocketTimeoutException) {
+    } catch (e: SocketTimeoutException) {
         return Result.Error(DataError.Remote.REQUEST_TIMEOUT)
     } catch(e: UnresolvedAddressException) {
         return Result.Error(DataError.Remote.NO_INTERNET)
@@ -34,7 +34,7 @@ suspend inline fun <reified T> responseToResult(
         in 200..299 -> {
             try {
                 Result.Success(response.body<T>())
-            } catch(e: NoTransformationFoundException) {
+            } catch (e: NoTransformationFoundException) {
                 Result.Error(DataError.Remote.SERIALIZATION)
             }
         }

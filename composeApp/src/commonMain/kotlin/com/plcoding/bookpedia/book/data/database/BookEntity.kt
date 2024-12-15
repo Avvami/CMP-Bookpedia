@@ -12,8 +12,8 @@ data class BookEntity(
     val languages: List<String>,
     val authors: List<String>,
     val firstPublishYear: String?,
-    val ratingsAverage: Double?,
-    val ratingsCount: Int?,
-    val numPagesMedian: Int?,
-    val numEditions: Int
+    val averageRating: Double?,
+    val ratingCount: Int?,
+    val pages: Int?,
+    val editions: Int
 )

@@ -11,5 +11,7 @@ interface RemoteBookDataSource {
         resultLimit: Int? = null
     ): Result<SearchResponseDto, DataError.Remote>
 
-    suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote>
+    suspend fun getBookDetails(
+        bookId: String
+    ): Result<BookWorkDto, DataError.Remote>
 }

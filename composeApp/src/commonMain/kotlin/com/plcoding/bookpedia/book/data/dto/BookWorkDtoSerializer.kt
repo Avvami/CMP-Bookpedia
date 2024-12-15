@@ -13,7 +13,6 @@ import kotlinx.serialization.encoding.encodeStructure
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.decodeFromJsonElement
 
 object BookWorkDtoSerializer: KSerializer<BookWorkDto> {
 
@@ -34,7 +33,7 @@ object BookWorkDtoSerializer: KSerializer<BookWorkDto> {
                     )
                     val element = jsonDecoder.decodeJsonElement()
                     description = if(element is JsonObject) {
-                        decoder.json.decodeFromJsonElement<DescriptionDto>(
+                        decoder.json.decodeFromJsonElement(
                             element = element,
                             deserializer = DescriptionDto.serializer()
                         ).value

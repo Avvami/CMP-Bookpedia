@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalLayoutApi::class)
-
 package com.plcoding.bookpedia.book.presentation.book_detail
 
 import androidx.compose.foundation.layout.Arrangement
@@ -7,190 +5,249 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastJoinToString
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cmp_bookpedia.composeapp.generated.resources.Res
 import cmp_bookpedia.composeapp.generated.resources.description_unavailable
-import cmp_bookpedia.composeapp.generated.resources.languages
-import cmp_bookpedia.composeapp.generated.resources.pages
-import cmp_bookpedia.composeapp.generated.resources.rating
 import cmp_bookpedia.composeapp.generated.resources.synopsis
-import com.plcoding.bookpedia.book.presentation.book_detail.components.BlurredImageBackground
-import com.plcoding.bookpedia.book.presentation.book_detail.components.BookChip
-import com.plcoding.bookpedia.book.presentation.book_detail.components.ChipSize
-import com.plcoding.bookpedia.book.presentation.book_detail.components.TitledContent
-import com.plcoding.bookpedia.core.presentation.SandYellow
+import coil3.compose.AsyncImage
+import com.plcoding.bookpedia.book.presentation.book_detail.components.Chip
+import com.plcoding.bookpedia.core.domain.util.formatAverageRating
 import org.jetbrains.compose.resources.stringResource
-import kotlin.math.round
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun BookDetailScreenRoot(
-    viewModel: BookDetailViewModel,
+    viewModel: BookDetailViewModel = koinViewModel(),
     onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-
     BookDetailScreen(
         state = state,
         onAction = { action ->
             when(action) {
-                is BookDetailAction.OnBackClick -> onBackClick()
-                else -> Unit
+                BookDetailAction.OnBackClick -> onBackClick()
+                else -> {}
             }
             viewModel.onAction(action)
         }
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 private fun BookDetailScreen(
     state: BookDetailState,
     onAction: (BookDetailAction) -> Unit
 ) {
-    BlurredImageBackground(
-        imageUrl = state.book?.imageUrl,
-        isFavorite = state.isFavorite,
-        onFavoriteClick = {
-            onAction(BookDetailAction.OnFavoriteClick)
-        },
-        onBackClick = {
-            onAction(BookDetailAction.OnBackClick)
-        },
-        modifier = Modifier.fillMaxSize()
-    ) {
-        if(state.book != null) {
-            Column(
-                modifier = Modifier
-                    .widthIn(max = 700.dp)
-                    .fillMaxWidth()
-                    .padding(
-                        vertical = 16.dp,
-                        horizontal = 24.dp
-                    )
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = state.book.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = state.book.authors.joinToString(),
-                    style = MaterialTheme.typography.titleMedium,
-                    textAlign = TextAlign.Center
-                )
-                Row(
-                    modifier = Modifier
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    state.book.averageRating?.let { rating ->
-                        TitledContent(
-                            title = stringResource(Res.string.rating),
-                        ) {
-                            BookChip {
-                                Text(
-                                    text = "${round(rating * 10) / 10.0}"
-                                )
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = null,
-                                    tint = SandYellow
-                                )
-                            }
-                        }
-                    }
-                    state.book.numPages?.let { pageCount ->
-                        TitledContent(
-                            title = stringResource(Res.string.pages),
-                        ) {
-                            BookChip {
-                                Text(text = pageCount.toString())
-                            }
-                        }
-                    }
-                }
-                if(state.book.languages.isNotEmpty()) {
-                    TitledContent(
-                        title = stringResource(Res.string.languages),
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
+    val topBarScrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    Scaffold(
+        modifier = Modifier.nestedScroll(topBarScrollBehavior.nestedScrollConnection),
+        topBar = {
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(
+                        onClick = { onAction(BookDetailAction.OnBackClick) }
                     ) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.Center,
-                            modifier = Modifier.wrapContentSize(Alignment.Center)
-                        ) {
-                            state.book.languages.forEach { language ->
-                                BookChip(
-                                    size = ChipSize.SMALL,
-                                    modifier = Modifier.padding(2.dp)
-                                ) {
-                                    Text(
-                                        text = language.uppercase(),
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
-                            }
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surface,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface
+                ),
+                scrollBehavior = topBarScrollBehavior
+            )
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding()),
+            contentPadding = PaddingValues(start = 16.dp, top = innerPadding.calculateTopPadding() + 8.dp, end = 16.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(200.dp)
+                            .aspectRatio(2 / 3f)
+                            .shadow(
+                                elevation = 65.dp,
+                                shape = MaterialTheme.shapes.large,
+                                ambientColor = MaterialTheme.colorScheme.primary,
+                                spotColor = MaterialTheme.colorScheme.primary
+                            )
+                            .clip(MaterialTheme.shapes.large)
+                    ) {
+                        AsyncImage(
+                            modifier = Modifier.fillMaxSize(),
+                            model = state.book?.imageUrl,
+                            contentDescription = "Cover",
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        state.book?.title?.let {
+                            Text(
+                                text = it,
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        }
+                        state.book?.authors?.let {
+                            Text(
+                                text = it.take(3).fastJoinToString(","),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface.copy(.7f)
+                            )
                         }
                     }
                 }
-                Text(
-                    text = stringResource(Res.string.synopsis),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier
-                        .align(Alignment.Start)
-                        .fillMaxWidth()
-                        .padding(
-                            top = 24.dp,
-                            bottom = 8.dp
-                        )
-                )
-                if(state.isLoading) {
-                    CircularProgressIndicator()
-//                    Box(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .weight(1f),
-//                        contentAlignment = Alignment.Center
-//                    ) {
-//                    }
-                } else {
-                    Text(
-                        text = if(state.book.description.isNullOrBlank()) {
-                            stringResource(Res.string.description_unavailable)
-                        } else {
-                            state.book.description
+            }
+            item {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
+                ) {
+                    state.book?.languages?.find { it.uppercase() == "ENG" }?.let { language ->
+                        Chip(
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        ) {
+                            Text(text = language.uppercase())
+                        }
+                    }
+                    state.book?.pages?.let { pages ->
+                        Chip(
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        ) {
+                            Text(text = if (pages != 1) "$pages Pages" else "$pages Page")
+                        }
+                    }
+                    state.book?.averageRating?.let { rating ->
+                        Chip(
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(ButtonDefaults.IconSize),
+                                imageVector = Icons.Filled.Star,
+                                contentDescription = "Rating",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = buildAnnotatedString {
+                                    withStyle(
+                                        style = SpanStyle(
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    ) {
+                                        append(formatAverageRating(rating))
+                                    }
+                                    withStyle(
+                                        style = SpanStyle(
+                                            color = MaterialTheme.colorScheme.onSurface.copy(.7f)
+                                        )
+                                    ) {
+                                        append("/5")
+                                    }
+                                    state.book.ratingCount?.let { count ->
+                                        withStyle(
+                                            style = SpanStyle(
+                                                color = MaterialTheme.colorScheme.onSurface.copy(.7f),
+                                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                                fontWeight = MaterialTheme.typography.labelMedium.fontWeight
+                                            )
+                                        ) {
+                                            append(" ($count)")
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
+                    FilledIconButton(
+                        modifier = Modifier.align(Alignment.CenterVertically),
+                        onClick = {
+                            onAction(BookDetailAction.OnFavoriteClick)
                         },
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Justify,
-                        color = if(state.book.description.isNullOrBlank()) {
-                            Color.Black.copy(alpha = 0.4f)
-                        } else Color.Black,
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
+                        shape = MaterialTheme.shapes.small,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.surface
+                        )
+                    ) {
+                        Icon(
+                            imageVector = if (state.favorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                            contentDescription = "Add Favorite"
+                        )
+                    }
+                }
+            }
+            item {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.synopsis),
+                        style = MaterialTheme.typography.titleLarge
                     )
+                    (if (state.book?.description.isNullOrEmpty()) stringResource(Res.string.description_unavailable) else state.book?.description)?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
             }
         }

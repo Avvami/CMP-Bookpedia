@@ -1,13 +1,16 @@
 package com.plcoding.bookpedia.book.presentation.book_list.components
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,30 +19,46 @@ import com.plcoding.bookpedia.book.domain.Book
 
 @Composable
 fun BookList(
-    books: List<Book>,
-    onBookClick: (Book) -> Unit,
     modifier: Modifier = Modifier,
-    scrollState: LazyListState = rememberLazyListState()
+    booksCount: Int = 0,
+    books: List<Book>,
+    favorites: List<Book>,
+    onBookClick: (Book) -> Unit,
+    onFavoriteClick: (Book, favorite: Boolean) -> Unit,
+    lazyGridState: LazyGridState = rememberLazyGridState()
 ) {
-    LazyColumn(
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 400.dp),
         modifier = modifier,
-        state = scrollState,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        state = lazyGridState,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 16.dp)
     ) {
+        if (booksCount != 0) {
+            item(
+                span = { GridItemSpan(maxLineSpan) }
+            ) {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = if (booksCount == 1) "$booksCount result" else "$booksCount results",
+                    style = MaterialTheme.typography.labelLarge
+                )
+            }
+        }
         items(
             items = books,
             key = { it.id }
         ) { book ->
-            BookListItem(
-                book = book,
+            val favorite = favorites.any { it.id == book.id }
+            BookCard(
                 modifier = Modifier
-                    .widthIn(max = 700.dp)
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                onClick = {
-                    onBookClick(book)
-                }
+                    .animateItem(),
+                book = book,
+                isFavorite = favorite,
+                onClick = { onBookClick(book) },
+                onFavoriteClick = { onFavoriteClick(it, favorite) }
             )
         }
     }

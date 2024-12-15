@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalForeignApi::class)
-
 package com.plcoding.bookpedia.book.data.database
 
 import androidx.room.Room

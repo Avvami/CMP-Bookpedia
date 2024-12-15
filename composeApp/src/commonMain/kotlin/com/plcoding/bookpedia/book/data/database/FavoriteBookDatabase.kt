@@ -9,9 +9,11 @@ import androidx.room.TypeConverters
     entities = [BookEntity::class],
     version = 1
 )
+
 @TypeConverters(
     StringListTypeConverter::class
 )
+
 @ConstructedBy(BookDatabaseConstructor::class)
 abstract class FavoriteBookDatabase: RoomDatabase() {
     abstract val favoriteBookDao: FavoriteBookDao
